@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Buscador de Facilitadores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+      background-color: #f7f9fb;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      table-layout: fixed; /* Asegura que las columnas tengan un tamaño fijo */
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      overflow: hidden; /* Evita que el contenido se desborde */
+      text-overflow: ellipsis; /* Si el contenido es largo, se corta */
+      white-space: nowrap; /* Impide que el contenido se ajuste a la siguiente línea */
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+      font-size: 18px; /* Mantener tamaño normal del encabezado */
+    }
+    td {
+      font-size: 12px; /* Reducir tamaño de letra aún más en las celdas */
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    /* Añadir anchos fijos para cada columna */
+    th:nth-child(1), td:nth-child(1) {
+      width: 400px; /* Facilitador de Compra - Ampliado */
+    }
+    th:nth-child(2), td:nth-child(2) {
+      width: 100px; /* Género */
+    }
+    th:nth-child(3), td:nth-child(3) {
+      width: 150px; /* Teléfono */
+    }
+    th:nth-child(4), td:nth-child(4) {
+      width: 200px; /* Correo Institucional */
+    }
+    th:nth-child(5), td:nth-child(5) {
+      width: 380px; /* Líder de Unidad de Negocio - Ampliado */
+    }
+    th:nth-child(6), td:nth-child(6) {
+      width: 150px; /* Teléfono LUN */
+    }
+    th:nth-child(7), td:nth-child(7) {
+      width: 200px; /* Correo LUN */
+    }
+    th:nth-child(8), td:nth-child(8) {
+      width: 250px; /* Gerente - Ampliado */
+    }
+    th:nth-child(9), td:nth-child(9) {
+      width: 200px; /* Correo Gerente */
+    }
+    th:nth-child(10), td:nth-child(10) {
+      width: 150px; /* Región */
+    }
+  </style>
+</head>
+<body>
+  <h1>Buscador de Facilitadores de Compra</h1>
+  <input type="text" id="buscador" placeholder="Buscar por nombre, región, correo, etc..." oninput="filtrar()">
+  <div id="resultado"></div>
+
+  <script>
+    let datos = [];
+
+    const url = "https://script.google.com/macros/s/AKfycbzF1Nu8xYfsfxfcBUaEvEj76mGUEkPedqT7Ktpa8Gs-uGESl5MxmgOMLLzloxpGDvoH/exec";  // URL de tu Apps Script
+
+    // Función para cargar los datos
+    fetch(url)
+      .then(res => res.json())
+      .then(json => {
+        datos = json;
+        mostrar(json);
+      })
+      .catch(error => {
+        document.getElementById("resultado").innerHTML = "<p>Error cargando datos.</p>";
+        console.error("Error al obtener los datos:", error);
+      });
+
+    // Función para filtrar los resultados
+    function filtrar() {
+      const q = document.getElementById("buscador").value.toLowerCase();
+      const resultados = datos.filter(row =>
+        Object.values(row).some(val =>
+          String(val).toLowerCase().includes(q)
+        )
+      );
+      mostrar(resultados);
+    }
+
+    // Función para mostrar los resultados en formato tabla
+    function mostrar(lista) {
+      const cont = document.getElementById("resultado");
+
+      // Crear la tabla
+      let tablaHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Facilitador de Compra</th>
+              <th>Género</th>
+              <th>Teléfono</th>
+              <th>Correo Institucional</th>
+              <th>Líder de Unidad de Negocio</th>
+              <th>Teléfono LUN</th>
+              <th>Correo LUN</th>
+              <th>Gerente</th>
+              <th>Correo Gerente</th>
+              <th>Región</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      // Agregar filas de datos
+      lista.forEach(row => {
+        tablaHTML += `
+          <tr>
+            <td>${row['Facilitador de compra']}</td>
+            <td>${row['Genero']}</td>
+            <td>${row['Teléfono']}</td>
+            <td>${row['Correo Institucional']}</td>
+            <td>${row['Lider de Unidad de Negocio']}</td>
+            <td>${row['Teléfono LUN']}</td>
+            <td>${row['Correo LUN']}</td>
+            <td>${row['Gerente']}</td>
+            <td>${row['Correo Gerente']}</td>
+            <td>${row['Región']}</td>
+          </tr>
+        `;
+      });
+
+      tablaHTML += `
+          </tbody>
+        </table>
+      `;
+
+      cont.innerHTML = tablaHTML;
+    }
+  </script>
+</body>
+</html>
