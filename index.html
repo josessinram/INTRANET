@@ -33,13 +33,12 @@
     .top-bar button:hover {
       background-color: #2980b9;
     }
-    input#buscador {
-      flex: 1;
+    input {
+      width: 100%;
       padding: 12px;
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      margin-left: 20px;
     }
     table {
       width: 100%;
@@ -66,12 +65,18 @@
     tr:hover {
       background-color: #f1f1f1;
     }
-
     th:nth-child(1), td:nth-child(1) { width: 400px; }
-    th:nth-child(5), td:nth-child(5) { width: 300px; }
+    th:nth-child(2), td:nth-child(2) { width: 100px; }
+    th:nth-child(3), td:nth-child(3) { width: 150px; }
+    th:nth-child(4), td:nth-child(4) { width: 200px; }
+    th:nth-child(5), td:nth-child(5) { width: 380px; }
+    th:nth-child(6), td:nth-child(6) { width: 150px; }
+    th:nth-child(7), td:nth-child(7) { width: 200px; }
     th:nth-child(8), td:nth-child(8) { width: 250px; }
+    th:nth-child(9), td:nth-child(9) { width: 200px; }
+    th:nth-child(10), td:nth-child(10) { width: 150px; }
 
-    /* Modal */
+    /* Estilos para el modal */
     .modal {
       display: none;
       position: fixed;
@@ -94,7 +99,7 @@
       margin-top: 0;
       color: #2c3e50;
     }
-    .modal-content input, .modal-content select {
+    .modal-content input {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
@@ -122,7 +127,7 @@
 
   <div class="top-bar">
     <button id="btnActualizar">Actualizar datos</button>
-    <input type="text" id="buscador" placeholder="Buscar por nombre, región, correo, etc...">
+    <input type="text" id="buscador" placeholder="Buscar por nombre, región, correo, etc..." oninput="filtrar()">
   </div>
 
   <div id="resultado"></div>
@@ -132,127 +137,108 @@
     <div class="modal-content">
       <span class="close" id="cerrarModal">&times;</span>
       <h2>Actualizar Datos</h2>
-      <input type="text" id="nombreFacilitador" placeholder="🔤 Nombre del facilitador" oninput="this.value = this.value.toUpperCase()">
-      <input type="text" id="nuevoNumero" placeholder="📞 Número nuevo" maxlength="10" pattern="\d*">
-      <select id="host">
-        <option value="">👤 Selecciona el host</option>
-        <option>AMANDA HERNANDEZ VILLAGOMEZ</option>
-        <option>BRENDA LILIANA HERRERA ZUÑIGA</option>
-        <option>EDGAR URIEL ROSALES CORTEZ</option>
-        <option>EDUARDO JUAREZ PASTRANA</option>
-        <option>ERENDIRA JOSELYN MEDINA ONOFRE</option>
-        <option>GABRIELA VIEYRA MIRANDA</option>
-        <option>GEOVANNY MORALES ZUÑIGA</option>
-        <option>GRECIA PAOLA OTERO MORA</option>
-        <option>GUADALUPE GRISEL MARTINEZ GOMEZ</option>
-        <option>IVONNE RAYMUNDO ESPINOSA</option>
-        <option>JUAN ANTONIO ZARATE RAMOS</option>
-        <option>JUAN CARLOS MENDOZA SALDAÑA</option>
-        <option>JUAN CARLOS QUIROZ CERON</option>
-        <option>LEONELA MICHELLE RUIZ GUERRERO</option>
-        <option>MIRIAM CRUZ LOPEZ</option>
-        <option>ROSALBA TORRES TELLO</option>
-        <option>YAZMIN ESMERALDA LOPEZ FLORES</option>
-        <option>YOANA CONTRERAS VILLANUEVA</option>
-      </select>
-      <button onclick="enviarFormulario()">📨 Enviar</button>
+      <input type="text" id="nombreFacilitador" placeholder="Nombre del facilitador">
+      <input type="text" id="nuevoNumero" placeholder="Número nuevo">
+      <input type="text" id="host" placeholder="Host">
+      <button onclick="enviarFormulario()">Enviar</button>
     </div>
   </div>
 
   <script>
-    const URL = "https://script.google.com/macros/s/AKfycbwoj2ocgvkiNKrMCRrf-dJGyr1pYUHHX5pTiJzibRVsH4oeM_GT5s4A_Awsi2faMtU3/exec";
+    let datos = [];
 
-    document.getElementById("btnActualizar").onclick = function() {
-      document.getElementById("modal").style.display = "block";
-    };
-    document.getElementById("cerrarModal").onclick = function() {
-      document.getElementById("modal").style.display = "none";
-    };
+    const url = "https://script.google.com/macros/s/AKfycbzF1Nu8xYfsfxfcBUaEvEj76mGUEkPedqT7Ktpa8Gs-uGESl5MxmgOMLLzloxpGDvoH/exec";
 
-    function enviarFormulario() {
-      const facilitador = document.getElementById("nombreFacilitador").value.trim();
-      const telefono = document.getElementById("nuevoNumero").value.trim();
-      const host = document.getElementById("host").value.trim();
-
-      if (!facilitador || !telefono || !host) {
-        alert("Por favor, completa todos los campos.");
-        return;
-      }
-
-      if (!/^\d{10}$/.test(telefono)) {
-        alert("El número debe tener exactamente 10 dígitos.");
-        return;
-      }
-
-      const formData = new URLSearchParams();
-      formData.append("facilitador", facilitador);
-      formData.append("telefono", telefono);
-      formData.append("host", host);
-
-      fetch(URL, {
-        method: "POST",
-        body: formData
-      })
-      .then(response => response.text())
-      .then(data => {
-        alert("Petición enviada. Por favor avisa a JOSE RAMIREZ.");
-        document.getElementById("modal").style.display = "none";
-        document.getElementById("nombreFacilitador").value = "";
-        document.getElementById("nuevoNumero").value = "";
-        document.getElementById("host").value = "";
+    fetch(url)
+      .then(res => res.json())
+      .then(json => {
+        datos = json;
+        mostrar(json);
       })
       .catch(error => {
-        alert("Error al enviar los datos.");
-        console.error(error);
-      });
-    }
-
-    function cargarDatos() {
-      fetch(URL)
-        .then(res => res.json())
-        .then(data => {
-          window.todosLosDatos = data;
-          mostrarDatos(data);
-        });
-    }
-
-    function mostrarDatos(datos) {
-      const container = document.getElementById("resultado");
-      if (datos.length === 0) {
-        container.innerHTML = "<p>No se encontraron resultados.</p>";
-        return;
-      }
-
-      const headers = Object.keys(datos[0]);
-      let tabla = "<table><thead><tr>";
-      headers.forEach(h => {
-        tabla += `<th>${h}</th>`;
-      });
-      tabla += "</tr></thead><tbody>";
-
-      datos.forEach(row => {
-        tabla += "<tr>";
-        headers.forEach(h => {
-          tabla += `<td>${row[h]}</td>`;
-        });
-        tabla += "</tr>";
+        document.getElementById("resultado").innerHTML = "<p>Error cargando datos.</p>";
+        console.error("Error al obtener los datos:", error);
       });
 
-      tabla += "</tbody></table>";
-      container.innerHTML = tabla;
-    }
-
-    document.getElementById("buscador").addEventListener("input", function() {
-      const texto = this.value.toLowerCase();
-      const filtrado = window.todosLosDatos.filter(row =>
-        Object.values(row).some(
-          val => val.toString().toLowerCase().includes(texto)
+    function filtrar() {
+      const q = document.getElementById("buscador").value.toLowerCase();
+      const resultados = datos.filter(row =>
+        Object.values(row).some(val =>
+          String(val).toLowerCase().includes(q)
         )
       );
-      mostrarDatos(filtrado);
-    });
+      mostrar(resultados);
+    }
 
-    cargarDatos();
+    function mostrar(lista) {
+      const cont = document.getElementById("resultado");
+      let tablaHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Facilitador de Compra</th>
+              <th>Género</th>
+              <th>Teléfono</th>
+              <th>Correo Institucional</th>
+              <th>Líder de Unidad de Negocio</th>
+              <th>Teléfono LUN</th>
+              <th>Correo LUN</th>
+              <th>Gerente</th>
+              <th>Correo Gerente</th>
+              <th>Región</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      lista.forEach(row => {
+        tablaHTML += `
+          <tr>
+            <td>${row['Facilitador de compra']}</td>
+            <td>${row['Genero']}</td>
+            <td>${row['Teléfono']}</td>
+            <td>${row['Correo Institucional']}</td>
+            <td>${row['Lider de Unidad de Negocio']}</td>
+            <td>${row['Teléfono LUN']}</td>
+            <td>${row['Correo LUN']}</td>
+            <td>${row['Gerente']}</td>
+            <td>${row['Correo Gerente']}</td>
+            <td>${row['Región']}</td>
+          </tr>
+        `;
+      });
+
+      tablaHTML += `</tbody></table>`;
+      cont.innerHTML = tablaHTML;
+    }
+
+    // Modal
+    const modal = document.getElementById("modal");
+    const btnActualizar = document.getElementById("btnActualizar");
+    const btnCerrar = document.getElementById("cerrarModal");
+
+    btnActualizar.onclick = function() {
+      modal.style.display = "block";
+    }
+
+    btnCerrar.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    function enviarFormulario() {
+      const nombre = document.getElementById("nombreFacilitador").value;
+      const numero = document.getElementById("nuevoNumero").value;
+      const host = document.getElementById("host").value;
+
+      alert(`Formulario enviado:\nNombre: ${nombre}\nNúmero: ${numero}\nHost: ${host}`);
+      modal.style.display = "none";
+    }
   </script>
 </body>
 </html>
